@@ -1,0 +1,282 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting - Jamie Hellwege, jrh5794'
+author: "SDS348"
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+- **0. (5 pts)** Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?
+
+I chose the bumpus data set on Professor Bumpus' sparrows, which he caught in the 1880s. He determined their sex and measured 9 morphological traits, so I thought it would be interesting to compare male and female survival rates and sex to the various lengths of their body parts. I took evolution a few semesters ago and it was one of my favorite classes! The data set includes numeric variables on the total sparrow length, the alar length, bird weight, head and beak lengths, humerus length, femur length, tibiotarsus length, skull width, and keel width. Additionally, the data set includes the sex of the bird (male or female, dummy coded) and if the bird survived or not (true or false), which can be coded as binomials. Since both sex and survival could be binomial, I used both in regressions to add a more robust analysis of the sparrows. In total, there are 136 observations and 14 total variables. 
+
+- **1. (15 pts)** Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all is unreasonable or doesn't make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3). Briefly discuss some of the MANOVA assumptions and whether or not they are likely to have been met here (no need for anything too in-depth) (2).
+
+``` {r}
+bumpus<-read.csv("bumpus.csv",header=T)
+bumpus$age<-NULL
+
+library(rstatix)
+group <- bumpus$survival
+DVs <- bumpus %>% select(length_beak_head_mm, total_length_mm, length_humerus_in, weight_g)
+sapply(split(DVs, group), mshapiro_test) #multivariate normality assumption
+box_m(DVs, group) #covariance matrices assumption
+
+man1<-manova(cbind(length_beak_head_mm, total_length_mm, length_humerus_in, weight_g)~survival, data=bumpus)
+summary(man1)
+summary.aov(man1)
+
+pairwise.t.test(bumpus$length_beak_head_mm,
+bumpus$survival, p.adj="none")
+pairwise.t.test(bumpus$total_length_mm,
+bumpus$survival, p.adj="none") #1 test
+pairwise.t.test(bumpus$length_humerus_in,
+bumpus$survival, p.adj="none")
+pairwise.t.test(bumpus$weight_g,
+bumpus$survival, p.adj="none")
+```
+I started this analysis with 4 morphological variables: beak and head length, total sparrow length, total weight, and humerus length, because these are 4 different body parts/statistics of the sparrows. After performing a MANOVA test, I found that my p value showed a significance difference across my categorical variable of whether the birds survived or not (p = 3.339e-7). The univariate ANOVAs showed that beak and head length is not significant across survival (p=0.4426), but the total bird length (p=3.348e-3), humerus length (p=0.0314), and weight of the birds (p=0.0118) are significant compared to the survival category. The post-hoc t tests proved that survival did not differ from death based on beak and head length, but survival was significant from death based on total bird length, humerus length, and total bird weight (values less than 0.05). In total, I performed 4 t tests, 4 ANOVAs, 1 MANOVA, equaling 9 tests overall with a high type 1 error rate of 0.3698 (36.98%). The significance level would be adjusted to 0.0056 based on the bonferroni correction. After making this correction, head and beak length remains insignificant (p>0.0056), but after adjusting the significance level accordingly, the humerus length (p>0.0056, p is 0.0314) and the weight of the birds (p>0.0056, p is 0.0118) are no longer significant. However, the total length of the bird remains significant after the bonferonni correction (p<0.0056, p is 0.0035). The random sampling assumption has been met; sparrows from throughout Providence were randomly sampled in Bumpus' lab after a winter storm, which were them measured for the morphological traits in the dataset. We can reject the null hypothesis that multivariate normality is met, because the p value for the false category is below 0.05 in the Shapiro-Wilk test. However, the homogeneity of covariance matrices are met and not violated because the p value is greater than 0.05.
+
+
+- **2. (10 pts)** Perform some kind of randomization test on your data (that makes sense). The statistic can be anything you want (mean difference, correlation, F-statistic/ANOVA, chi-squared), etc. State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).
+
+```{r}
+#F statistic randomization test
+summary(aov(weight_g~survival,data=bumpus))
+pairwise.t.test(bumpus$weight_g, bumpus$survival, p.adj = "none") 
+obs_F<-6.526
+Fs<-replicate(5000,{
+  new<-bumpus %>% mutate(weight_g=sample(weight_g))
+  SSW<- new %>% group_by(survival) %>% summarize(SSW=sum((weight_g-mean(weight_g))^2)) %>% summarize(sum(SSW)) %>% pull
+  SSB<- new %>% mutate(mean=mean(weight_g)) %>% group_by(survival) %>% mutate(groupmean=mean(weight_g)) %>% 
+    summarize(SSB=sum((mean-groupmean)^2)) %>% summarize(sum(SSB)) %>% pull
+  (SSB/1)/(SSW/134)
+})
+
+#Plot
+hist(Fs, prob=T); abline(v = obs_F, col="red",add=T)
+mean(Fs>obs_F)
+```
+In this randomization test, the null hypothesis (Ho) is that the mean of the survival groups will be the same, and the alternative hypothesis (Ha) is that the two means differ from one another. The summary of the ANOVA shows a p value of 0.019, meaning that the two groups do differ significantly from one another in terms of sparrow weight. This p value allows us to reject the null hypothesis that all means are the same. Since there are only two categorical groups, there is no need to perform a post hoc t test to see which groups vary from one another, but in this case it can also just show that TRUE and FALSE categories of survival do significantly vary from one another (p<0.05). The randomization test allowed me to scramble the bumpus data and compute a new F statistic, which is the ratio of the between-group variability to the within-group variability. The distribution of F statistic under null hypothesis was graphed, and showed that some F statistics were close to the observed test statistic of 6.526, but most were less. The histogram proves why the p value was so low (0.009); the scrambled F statistic broke all associations between the weight of the sparrows and the survival outcome with simulated F statistics. 
+
+- **3. (40 pts)** Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.
+
+    - Interpret the coefficient estimates (do not discuss significance) (10)
+    - Plot the regression using `ggplot()` using geom_smooth(method="lm"). If your interaction is numeric by numeric, refer to code in the slides to make the plot or check out the `interactions` package, which makes this easier. If you have 3 or more predictors, just chose two of them to plot for convenience. (10)
+    - What proportion of the variation in the outcome does your model explain? (4)
+    - Check assumptions of linearity, normality, and homoskedasticity either graphically or using a hypothesis test (5)
+    - Regardless, recompute regression results with robust standard errors via `coeftest(..., vcov=vcovHC(...))`. Discuss significance of results, including any changes from before/after robust SEs if applicable. (10)
+    
+    
+```{r}
+library(lmtest)
+library(sandwich)
+bumpus$weight_c <- bumpus$weight_g - mean(bumpus$weight_g, na.rm=T)
+bumpus$totallength_c <- bumpus$total_length_mm - mean(bumpus$total_length_mm, na.rm=T)
+fit<-lm(weight_c ~ totallength_c*survival, data=bumpus) #regress length and survival on weight
+summary(fit)
+
+#Plotted Regression
+bumpus %>% select(totallength_c, weight_c, survival) %>% na.omit %>%
+  ggplot(aes(totallength_c, weight_c, color=survival)) +
+  geom_point()+geom_smooth(method="lm") +
+  geom_vline(xintercept=mean(bumpus$totallength_c,na.rm=T),lty=2)
+
+#Proportion of Variation
+summary(fit)$r.sq
+
+#Assumptions
+resids<-fit$residuals
+fitvals<-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, color='red')
+
+ggplot()+geom_histogram(aes(resids), bins=20)
+ggplot()+geom_qq(aes(sample=resids))+geom_qq(aes(sample=resids))
+ks.test(resids, "pnorm", mean=0, sd(resids))
+bptest(fit)
+
+#Regression with standard errors
+summary(fit)$coef[,1:3]
+coeftest(fit, vcov = vcovHC(fit))[,1:3]
+```
+When total length of sparrow is 0, the weight is 0.083 grams. The coefficient for total length is 0.026, which means that as the total length of the sparrow increases, the weight increases by 0.269. Survived sparrows with a total length of 0 have a predicted weight that is 0.225 times lower than the sparrows that did not survive. The slope of the survived sparrows' relationship between total length and weight is 0.081 times lower than the slope of the sparrows that did not survive's relationship between total length and weight. The regression plot shows the interaction between sparrow weight and total length for the sparrows that survived and did not survive. The proportion of the variation in the outcome explained by my model is 0.355.
+Based on the ggplot of my two numeric predictor variables, homoskedasticity is  met, meaning the points do not fan out as you go across the x axis and the null cannot be rejected. The Breusch-Pagan (bp) test also formally assesses homoskedasticity, which is met because the p value is not significant (0.263). Furthermore, a histogram of the data residuals and a qq plot both show that while normality and linearity are not exactly normal, linearity and normality are still met. I can also formally test normality using a Shapiro-Wilk normality test; the p value is not significant (0.778), meaning the normality is normal and I fail to reject the null. Overall, all 3 assumptions are met. Even though homoskedasticity is met, I recomputed regression results with robust standard errors. Comparing the uncorrected SE to the corrected SE, I found that all standard errors changed very little. The standard errors for the intercept, total length, and survival all slightly increased, which means the t statistic is smaller and the p value is larger, and less likely to reject the null hypothesis. The standard error for totallength_c:survivalTRUE slightly decreased, meaning the t statistic is larger and the p value is smaller. 
+
+
+- **4. (5 pts)** Rerun same regression model (with the interaction), but this time compute bootstrapped standard errors (either by resampling observations or residuals). Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs.
+
+```{r}
+fit<-lm(weight_c ~ totallength_c*survival, data=bumpus)
+boot_dat<- sample_frac(bumpus, replace=T)
+
+samp_distn<-replicate(5000, {
+boot_dat <- sample_frac(bumpus, replace=T)
+fit <- lm(weight_c~totallength_c*survival, data=boot_dat)
+coef(fit)
+})
+
+coeftest(fit, vcov = vcovHC(fit))[,1:3]
+samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+```
+I chose to compute the bootstrapped SE by resampling observations. I saved the coefficients of my linear regression to find the estimated SE for the regression. Comparing the computed bootstrapped standard errors to the robust standard errors, I found that the standard errors for the intercept, total length, and survival all slightly decreased, and the standard error for totallength_c:survivalTRUE slightly increased. Since the standard errors decreased for the intercept, total length, and survival, the p value has become smaller since the test statistic has become larger. Conversely, the standard error for totallength_c:survivalTRUE increased, meaning that the p value has become larger and the test statistic smaller. This is the exact opposite of my analysis in 3 above (everything that increased and decreased flipped), where I compared the uncorrected SE to the corrected SE. 
+
+
+- **5. (30 pts)** Fit a logistic regression model predicting a binary variable (if you don't have one, make/get one) from at least two explanatory variables (interaction not necessary). 
+
+    - Interpret coefficient estimates in context (10)
+    - Report a confusion matrix for your logistic regression (5)
+    - Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), Precision (PPV), and AUC of your model (5)
+    - Using ggplot, make a density plot of the log-odds (logit) colored/grouped by your binary outcome variable (5)
+    - Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret (5)
+    
+```{r}
+#Logistic Regression
+bumpus<-bumpus %>% mutate(y=ifelse(sex=="m",1,0))
+fit2<-glm(y~length_beak_head_mm+length_femur_in,data=bumpus,family=binomial(link="logit"))
+coeftest(fit2)
+
+#Confusion Matrix
+class_diag <- function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),factor(truth, levels=c(0,1)))
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup <-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR <-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  n <- length(TPR)
+  auc <- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+bumpus<-bumpus %>% mutate(y=ifelse(sex=="m",1,0))
+fit2<-glm(y~length_beak_head_mm+length_femur_in,data=bumpus,family=binomial(link="logit"))
+prob<-predict(fit2,type="response")
+class_diag(prob,bumpus$y)
+table(predict=as.numeric(prob>.5),truth=bumpus$y) %>% addmargins
+
+#Density plot of log-odds for each outcome:
+bumpus$logit<-predict(fit2,data=bumpus,type="link")
+bumpus %>% ggplot()+
+  geom_density(aes(logit,color=sex,fill=sex), alpha=.4)+
+  theme(legend.position=c(.85,.85))+
+  geom_vline(xintercept=0)+
+  xlab("logit (log-odds)")+ geom_rug(aes(logit,color=sex))
+
+#ROC curve
+library(plotROC)
+bumpus$probs<-predict(fit2,type="response")
+ROCplot<-ggplot(bumpus)+geom_roc(aes(d=y,m=probs), n.cuts=0) 
+ROCplot
+calc_auc(ROCplot)
+```
+Based on this logistics regression with no interaction between head and beak length and femur length, for every one unit increase in the beak length, the log of the odds goes up by 0.497, meaning the odds of being male increase by a factor of 1.6432. For a beak length of zero and a femur length of zero, the odds of being male are 1.955e-5 (these are very small odds of being male if the sparrow has no beak length of no femur length, the sparrow would not exist). The beak length has a positive effect on sex, meaning an increase an beak length increases the chances of being male, while the femur length has a negative effect and decreases the chances of being male. To calculate the log of the odds for any combination of beak length and femur length, you would use the formula logodds = -10.842 + 0.4966 * beak + -5.96669 * femur, and to find the odds of being male for that combination, you would use e^(logodds). 
+To report a confusion matrix, I found the predicted probabilities from my logistic regression model and the predicted outcomes. The AUC of my model is 0.6024, meaning model is a poor predictor. The accuracy of my model is 0.6176, which is the proportion of male and female sparrows that were correctly named such based on femur length and beak length. The true negative rate, or specificity, was 0.0204; this is the probability of correctly being a female sparrow. The precision was 0.6336, which is the proportion of classified male that actually are male. Finally, the true positive rate, or the sensitivity, was 0.954, which is the probability of detecting a male sparrow from all true sexes. 
+This density plot shows that everything in blue to the right of the vertical line (where logit = 0) is the true positive (TP) or being male and everything in red to the right of the vertical line is the false positive (FP), where being female was predicted but is actually male. Conversely, everything in red to the left of the line is the true negative (TN), where being female was accurately predicted, and everything flue to the right is the false negative (FN), predicted female but was actually male. All overlaps represent false predictions. 
+Based on the generated ROC curve, and the calculated ROC (0.6024), my model is poor, meaning the it is hard to predict the sex of a sparrow based only on the length of the beak and head and the length of the femur.
+
+
+- **6. (25 pts)** Perform a logistic regression predicting the same binary response variable from *ALL* of the rest of your variables (the more, the better!) 
+
+    - Fit model, compute in-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, AUC), and interpret (5)
+    - Perform 10-fold (or repeated random sub-sampling) CV with the same model and report average out-of-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, and AUC); interpret AUC and compare with the in-sample metrics (10)
+    - Perform LASSO on the same model/variables. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., `lambda.1se`). Discuss which variables are retained. (5)
+    - Perform 10-fold CV using only the variables lasso selected: compare model's out-of-sample AUC to that of your logistic regressions above (5)
+    
+```{r}
+fit3<-glm(y~length_beak_head_mm+total_length_mm+alar_extent_mm+weight_g+length_humerus_in+length_femur_in+length_tibiotarsus_in+skull_width_in_+keel_length_in,data=bumpus,family=binomial(link="logit"))
+coeftest(fit3)
+prob<-predict(fit3, type="response")
+class_diag(prob, bumpus$y) #in sample metric
+
+#10-Fold CV
+set.seed(1234)
+k=10
+
+data<-bumpus[sample(nrow(bumpus)),]
+folds<-cut(seq(1:nrow(bumpus)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$y
+fit4<-glm(y~length_beak_head_mm+total_length_mm+alar_extent_mm+weight_g+length_humerus_in+length_femur_in+length_tibiotarsus_in+skull_width_in_+keel_length_in,data=train,family="binomial")
+probs<-predict(fit4,newdata = test,type="response")
+diags<-rbind(diags,class_diag(probs,truth))
+}
+diags %>% summarize_all(mean)
+
+#LASSO 
+set.seed(1234)
+bumpus2<- bumpus %>% select(length_beak_head_mm, total_length_mm, alar_extent_mm, weight_g, length_humerus_in, length_femur_in, length_tibiotarsus_in, skull_width_in_, keel_length_in, survival, y)
+y<-as.matrix(bumpus2$y)
+x<-model.matrix(y~.,data=bumpus2)[,-1]
+head(x)
+
+library(glmnet)
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+#Rerun 10-fold CV
+set.seed(1234)
+k=10
+
+data<-bumpus[sample(nrow(bumpus)),]
+folds<-cut(seq(1:nrow(bumpus)),breaks=k,labels=F)
+diags<-NULL
+for(i in 1:k){
+train<-data[folds!=i,]
+test<-data[folds==i,]
+truth<-test$y
+fit5<-glm(y~survival+alar_extent_mm+length_tibiotarsus_in+keel_length_in,data=train,family="binomial")
+probs<-predict(fit5,newdata = test,type="response")
+diags<-rbind(diags,class_diag(probs,truth))
+}
+class_diag(prob, bumpus$y)
+diags %>% summarize_all(mean)
+
+```
+When comparing the binary response variable (sex) to all variables in the bumpus data set, I found an AUC of 0.9097, an accuracy of 0.8382, a sensitivity of 0.8966, a specificity of 0.7347, and a PPV of 0.8571. This model has a much better AUC (a great AUC), and overall is a much better model that the regression run in question 5 with only two predictor variables. 
+Using the same model to perform a 10-fold CV, I found an AUC of 0.8546, an accuracy of 0.7797, a sensitivity of 0.8331, a specificity of 0.6576, and a PPV of 0.8113. This AUC is not quite as good (this is a good AUC compared to the great AUC in the in-sample metric above). Only the specificity increased; all other classification diagnostics decreased. 
+Performing a LASSO on the same regression model, the retained variables are alar extent, tibiotarsus length, keel length, and survival. This means that these 4 variables are the most predictive in my data set. 
+Performing a 10-fold CV on only the variables lasso selection, I found an AUC of 0.8939, an accuracy of 0.8082, a sensitivity of 0.8556, a specificity of 0.6612, and a PPV of 0.8236. Compared to the in sample metrics, the model's out of sample AUC decreased slightly (and fell into the "good" range), and accuracy, sensitivity, specificity, and PPV all also decreased.
+
+...
+
+
+
+
+

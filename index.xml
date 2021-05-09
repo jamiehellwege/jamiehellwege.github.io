@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Jamie Hellwege</title>
+    <link>/</link>
+    <description>Recent content on Jamie Hellwege</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 09 May 2021 21:13:14 -0500</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My post 1</title>
+      <link>/post/2021/05/09/my-post-1/</link>
+      <pubDate>Sun, 09 May 2021 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2021/05/09/my-post-1/</guid>
+      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+    </item>
+    
+    <item>
+      <title>Goodbye R, Hello Python! ...Wait, hello R?</title>
+      <link>/post/2021/05/09/my-post/</link>
+      <pubDate>Sun, 09 May 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021/05/09/my-post/</guid>
+      <description>Using python in R! Are you in a statistics class using R and wondering “WHY on earth are we learning Python now?!” R is easy to learn, convenient, and has a great user interface. If you are anything like me, coding is not your forte, and the thought of learning ANOTHER coding platform is terrifying. But I’ve got your answer!
+What’s super interesting about Python is that you can use it within R.</description>
+    </item>
+    
+    <item>
+      <title>Project 1: Exploratory Data Analysis - Jamie Hellwege, jrh5794</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Data Wrangling and Data Exploration 0. Introduction (5 pts) I chosen my two data sets, titled “gdp” and “unemployed”, because I wanted to see if there was a relationship between US GDP level, employment, and unemployment rates in the United States during the years 1941-2010. The “gdp” data set contains the year, the GDP in billions of current dollars, the DGP in billions of chained 2009 dollars, the GDP percent change based on current dollars, and the GDP percent change based on chained 2009 dollars.</description>
+    </item>
+    
+    <item>
+      <title>Project 2: Modeling, Testing, and Predicting - Jamie Hellwege, jrh5794</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>0. (5 pts) Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?  I chose the bumpus data set on Professor Bumpus’ sparrows, which he caught in the 1880s. He determined their sex and measured 9 morphological traits, so I thought it would be interesting to compare male and female survival rates and sex to the various lengths of their body parts.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/</guid>
+      <description> Check out some of my coding projects below:
+ Wrangling &amp;amp; Exploratory Data Analysis
+ Modeling, Inference, Prediction
+  -- </description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>    </description>
+    </item>
+    
+  </channel>
+</rss>

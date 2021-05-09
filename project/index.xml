@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Projects on Jamie Hellwege</title>
+    <link>/project/</link>
+    <description>Recent content in Projects on Jamie Hellwege</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language><atom:link href="/project/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Project 1: Exploratory Data Analysis - Jamie Hellwege, jrh5794</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>Data Wrangling and Data Exploration 0. Introduction (5 pts) I chosen my two data sets, titled “gdp” and “unemployed”, because I wanted to see if there was a relationship between US GDP level, employment, and unemployment rates in the United States during the years 1941-2010. The “gdp” data set contains the year, the GDP in billions of current dollars, the DGP in billions of chained 2009 dollars, the GDP percent change based on current dollars, and the GDP percent change based on chained 2009 dollars.</description>
+    </item>
+    
+    <item>
+      <title>Project 2: Modeling, Testing, and Predicting - Jamie Hellwege, jrh5794</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>0. (5 pts) Introduce your dataset and each of your variables (or just your main variables if you have lots) in a paragraph. What are they measuring? How many observations?  I chose the bumpus data set on Professor Bumpus’ sparrows, which he caught in the 1880s. He determined their sex and measured 9 morphological traits, so I thought it would be interesting to compare male and female survival rates and sex to the various lengths of their body parts.</description>
+    </item>
+    
+  </channel>
+</rss>
