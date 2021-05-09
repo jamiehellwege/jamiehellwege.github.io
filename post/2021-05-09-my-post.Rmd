@@ -20,6 +20,7 @@ Click on that file to open it. Play around with its functions to get comfortable
 
 First things first: notice how when we use R markdown, we start the code chunk with "'''{r}". Similarly, the python code chunks will start with '''{python}. For example:
 
+## 1. Let's start with lists!
 ```{python}
 hay = "how are you"
 hay[0:11]
@@ -43,10 +44,14 @@ Notice how you can combine R and python to create an output! The r. feature allo
 #R code chunk
 cat(c(hi,py$hi))
 ```
+Lists combine saved objects from R and python together!
 
-
-### Here's another example
-```{r}
-
-
+### 2. Indexing
+```{python}
+my_stuff = ["a", 5, 35, 9, "j", "z"]
+my_stuff[0] #pulls out the first object in data
 ```
+One thing that is different between R and python is that the first object is called 1, while the first object in python is 0. In this case, when we ask python to return the "zeroth" object, it returns a, which is the first object. Cool right?
+These are just some of MANY functions you can do with python in R. Play around with these beginner functions, and soon you will be a pro!
+
+![](/post/2021-05-09-my-post_files/Join_Forces_meme.png)

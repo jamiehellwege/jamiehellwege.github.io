@@ -79,6 +79,9 @@
 <p>To start, create a python script by clicking on the terminal (to the right of the console below) and type in touch test.python. You have now created an empty python file in your directory!</p>
 <p>Click on that file to open it. Play around with its functions to get comfortable with the formatting! For example, type print(“how are you”) and run it to see this appear in the console. Going back to the terminal, you can also type in python3 test.python and all code in that file will print out. Another thing to note: you should see that there are 3 arrows in your console (looks like &gt;&gt;&gt;). This means that you are now using python instead of R (&gt;). NOw that you have seen how python looks in R, let’s try to combine python in R markdown!</p>
 <p>First things first: notice how when we use R markdown, we start the code chunk with "’’‘{r}". Similarly, the python code chunks will start with’’’{python}. For example:</p>
+</div>
+<div id="lets-start-with-lists" class="section level2">
+<h2>1. Let’s start with lists!</h2>
 <pre class="python"><code>hay = &quot;how are you&quot;
 hay[0:11]</code></pre>
 <pre><code>## &#39;how are you&#39;</code></pre>
@@ -94,8 +97,15 @@ print(r.hi,hi)</code></pre>
 <pre class="r"><code>#R code chunk
 cat(c(hi,py$hi))</code></pre>
 <pre><code>## How are you?</code></pre>
-<div id="heres-another-example" class="section level3">
-<h3>Here’s another example</h3>
+<p>Lists combine saved objects from R and python together!</p>
+<div id="indexing" class="section level3">
+<h3>2. Indexing</h3>
+<pre class="python"><code>my_stuff = [&quot;a&quot;, 5, 35, 9, &quot;j&quot;, &quot;z&quot;]
+my_stuff[0] #pulls out the first object in data</code></pre>
+<pre><code>## &#39;a&#39;</code></pre>
+<p>One thing that is different between R and python is that the first object is called 1, while the first object in python is 0. In this case, when we ask python to return the “zeroth” object, it returns a, which is the first object. Cool right?
+These are just some of MANY functions you can do with python in R. Play around with these beginner functions, and soon you will be a pro!</p>
+<p><img src="../../../../../post/2021-05-09-my-post_files/Join_Forces_meme.png" /></p>
 </div>
 </div>
 
